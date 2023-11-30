@@ -57,7 +57,7 @@ type Float = f32;
 ///
 /// let my_temp = Temperature::Celsius(0.0);
 ///```
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Temperature {
     Fahrenheit(self::Float),
     Celsius(self::Float),
@@ -80,7 +80,7 @@ impl Temperature {
     /// ```
     pub fn to_fahrenheit(&self) -> Temperature {
         match self {
-            Self::Fahrenheit(_) => self.clone(),
+            Self::Fahrenheit(_) => *self,
             Self::Celsius(c) => Self::Fahrenheit((c * 1.8) + 32.0),
             Self::Kelvin(k) => Self::Fahrenheit(((k - 273.15) * 1.8) + 32.0),
         }
@@ -103,7 +103,7 @@ impl Temperature {
     pub fn to_celsius(&self) -> Temperature {
         match self {
             Temperature::Fahrenheit(f) => Self::Celsius((f - 32.0) / 1.8),
-            Temperature::Celsius(_) => self.clone(),
+            Temperature::Celsius(_) => *self,
             Temperature::Kelvin(k) => Self::Celsius(k - 273.15),
         }
     }
@@ -126,7 +126,7 @@ impl Temperature {
         match self {
             Temperature::Fahrenheit(f) => Self::Kelvin(((f - 32.0) / 1.8) + 273.15),
             Temperature::Celsius(c) => Self::Kelvin(c + 273.15),
-            Temperature::Kelvin(_) => self.clone(),
+            Temperature::Kelvin(_) => *self,
         }
     }
 
