@@ -4,7 +4,7 @@ description = "A temperature unit library for Rust. It's intended to be minimal,
 authors = ["Barrett Ray <contact@barretts.club>"]
 license = "MIT"
 repository = "https://github.com/onkoe/simmer"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 categories = ["no-std", "science", "embedded", "mathematics"]
 readme = "README.md"
@@ -12,10 +12,13 @@ keywords = ["temperature", "temp", "fahrenheit", "celsius", "kelvin"]
 exclude = [".gitignore", "tests/", "README.md"]
 
 [dependencies]
-assert_approx_eq = "1.1.0"
-ufmt = "0.2.0"
-ufmt-write = "0.1.0"
-ufmt_float = "0.2.0"
+assert_approx_eq = "1.1"
+ufmt = "0.2"
+ufmt-write = "0.1"
+ufmt_float = "0.2"
+
+# for checked
+onlyerror = "0.1" # { version = "0.1", optional = true } TODO
 
 
 [features]
@@ -24,3 +27,4 @@ default = []
 #/// Use `f32` instead of `f64` for temperatures. This can help when working with devices that don't
 #/// support `f64`, including some Arduino boards.
 f32 = []
+checked = [] # ["dep:onlyerror"] TODO
