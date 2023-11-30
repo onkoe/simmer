@@ -1,0 +1,18 @@
+[package]
+name = "simmer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+assert_approx_eq = "1.1.0"
+ufmt = "0.2.0"
+ufmt-write = "0.1.0"
+ufmt_float = "0.2.0"
+
+
+[features]
+#/// Includes the default `f64` type for internal + exported values.
+default = []
+#/// Use `f32` instead of `f64` for temperatures. This can help when working with devices that don't
+#/// support `f64`, including some Arduino boards.
+f32 = []
