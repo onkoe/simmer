@@ -231,3 +231,65 @@ impl ufmt::uDisplay for Temperature {
         return ufmt::uwrite!(f, "{}", ufmt_float::uFmt_f64::Five(self.get_inner()));
     }
 }
+
+// operator overloading impls
+
+impl core::ops::Add for Temperature {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        match self {
+            Temperature::Fahrenheit(f) => {
+                Temperature::Fahrenheit(f + rhs.to_fahrenheit().into_inner())
+            }
+            Temperature::Celsius(c) => Temperature::Celsius(c + rhs.to_celsius().into_inner()),
+            Temperature::Kelvin(k) => Temperature::Kelvin(k + rhs.to_kelvin().into_inner()),
+        }
+    }
+}
+
+impl core::ops::Sub for Temperature {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        match self {
+            Temperature::Fahrenheit(f) => {
+                Temperature::Fahrenheit(f - rhs.to_fahrenheit().into_inner())
+            }
+            Temperature::Celsius(c) => Temperature::Celsius(c - rhs.to_celsius().into_inner()),
+            Temperature::Kelvin(k) => Temperature::Kelvin(k - rhs.to_kelvin().into_inner()),
+        }
+    }
+}
+
+// note: you can add and subtract temperatures, but i can't think of any
+// possible reason to multiply/divide them.
+
+// as such, i used `Float` on these two - it just makes more sense..!
+
+// please let me know if you have a use-case for multiplying or dividing
+// two temperatures together. i want to document it!
+
+impl core::ops::Div<Float> for Temperature {
+    type Output = Self;
+
+    fn div(self, rhs: Float) -> Self::Output {
+        match self {
+            Temperature::Fahrenheit(f) => Temperature::Fahrenheit(f / rhs),
+            Temperature::Celsius(c) => Temperature::Celsius(c / rhs),
+            Temperature::Kelvin(k) => Temperature::Kelvin(k / rhs),
+        }
+    }
+}
+
+impl core::ops::Mul<Float> for Temperature {
+    type Output = Self;
+
+    fn mul(self, rhs: Float) -> Self::Output {
+        match self {
+            Temperature::Fahrenheit(f) => Temperature::Fahrenheit(f * rhs),
+            Temperature::Celsius(c) => Temperature::Celsius(c * rhs),
+            Temperature::Kelvin(k) => Temperature::Kelvin(k * rhs),
+        }
+    }
+}
