@@ -47,6 +47,10 @@ type Float = f32;
 ///
 /// Wraps a floating point number to give it a unit!
 /// You can create a new `Temperature` by putting a float value inside.
+///
+/// **Important**: `Temperature` is *not* checked, so invalid states are
+/// completely allowed.
+///
 #[cfg_attr(feature = "f32", doc = "```ignore")]
 #[cfg_attr(not(feature = "f32"), doc = "```")]
 /// use simmer::Temperature;
@@ -158,7 +162,7 @@ impl Temperature {
     /// let temp_inner = temp.get_inner();
     ///
     /// println!("{temp:?}'s inner is {temp_inner}");
-    pub fn get_inner(&self) -> Float {
+    pub const fn get_inner(&self) -> Float {
         match self {
             Temperature::Fahrenheit(t) => *t,
             Temperature::Celsius(t) => *t,
