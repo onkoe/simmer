@@ -1,7 +1,15 @@
 [package]
 name = "simmer"
+description = "A temperature unit library for Rust. It's intended to be minimal, embedded-aware, and easy to use!"
+authors = ["Barrett Ray <contact@barretts.club>"]
+license = "MIT"
+repository = "https://github.com/onkoe/simmer"
 version = "0.1.0"
 edition = "2021"
+categories = ["no-std", "science", "embedded", "mathematics"]
+readme = "README.md"
+keywords = ["temperature", "temp", "fahrenheit", "celsius", "kelvin"]
+exclude = [".gitignore", "tests/", "README.md"]
 
 [dependencies]
 assert_approx_eq = "1.1.0"
