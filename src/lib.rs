@@ -37,6 +37,9 @@
 //! println!("here's a number: {ice_raw_c}");
 //! ```
 
+// #[cfg(feature = "checked")] // TODO
+pub mod checked;
+
 #[cfg(not(feature = "f32"))]
 type Float = f64;
 
@@ -167,6 +170,18 @@ impl Temperature {
             Temperature::Fahrenheit(t) => *t,
             Temperature::Celsius(t) => *t,
             Temperature::Kelvin(t) => *t,
+        }
+    }
+
+    /// Tells you if a [Temperature] is below absolute zero - an invalid state
+    /// for temperature.
+    ///
+    /// So... `true` if **invalid**, `false` if **valid**.
+    pub fn check_abs_zero(&self) -> bool {
+        match self {
+            Temperature::Fahrenheit(f) => *f < -459.67,
+            Temperature::Celsius(c) => *c < -273.15,
+            Temperature::Kelvin(k) => *k < 0.0,
         }
     }
 }
