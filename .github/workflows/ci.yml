@@ -50,20 +50,15 @@ jobs:
           path: ~/.cargo/bin
           key: ${{ runner.os }}-cargo-bin-${{ hashFiles('**/Cargo.lock') }}
 
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny,cargo-all-features
+
       - name: Build
         run: cargo build --verbose
 
       - name: Run tests
-        run: |
-          cargo test --verbose
-          cargo test --verbose --features f32
-
-      - name: Install cargo-deny
-        run: |
-          if ! command -v cargo-deny &> /dev/null
-          then
-              cargo install cargo-deny
-          fi
+        run: cargo test-all-features
 
       - name: Run cargo-deny
         run: cargo deny check
@@ -75,3 +70,21 @@ jobs:
 
       - name: Check semver
         uses: obi1kenobi/cargo-semver-checks-action@v2
+
+  cargo_fuzz:
+    name: Use `cargo-fuzz` for a few minutes to check for easy invariants
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: nightly
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-binstall,cargo-fuzz
+
+      - name: Fuzz `CheckedTemperature` with `cargo-fuzz`
+        run: cargo +nightly fuzz run checked -- -max_total_time=180

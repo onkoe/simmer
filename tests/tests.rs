@@ -1,5 +1,3 @@
-mod ufmt;
-
 use assert_approx_eq::assert_approx_eq;
 use simmer::Temperature;
 
@@ -12,6 +10,7 @@ type Float = f32;
 
 /// This macro expects an argument order of (Fahrenheit, Celsius, Kelvin).
 /// If that order isn't correct, you'll find that things don't work properly...
+#[allow(unused)]
 macro_rules! test_all {
     ($temp_f:expr, $temp_c:expr, $temp_k:expr) => {
         // test temp_f
@@ -59,6 +58,9 @@ macro_rules! test_all {
         );
     };
 }
+
+#[allow(unused)]
+pub(crate) use test_all;
 
 #[test]
 fn surface_of_sun() {

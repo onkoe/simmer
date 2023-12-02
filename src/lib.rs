@@ -36,6 +36,38 @@
 //! let ice_raw_c: f64 = ice_c.into(); // it's an f32 if the feature is enabled!
 //! println!("here's a number: {ice_raw_c}");
 //! ```
+//!
+//! ### Checked
+//!
+//! There's also a [CheckedTemperature] type so you can safely store and use
+//! temperatures. It works on embedded and implements many of the same
+//! functions that [Temperature] does!
+//!
+//! See the [checked] module for more!
+//!
+//! Here's an example showing how to use it:
+//!
+//! ```ignore
+//! use simmer::{CheckedTemperature, Temperature};
+//!
+//! fn main() -> anyhow::Result<()> {
+//!     let ice = CheckedTemperature::new(Temperature::Fahrenheit(32.0))?;
+//!     println!("water freezes at {ice} degrees fahrenheit");
+//!
+//!     let ice_c = ice.to_celsius()?;
+//!     let ice_raw_c: f64 = ice_c.into(); // can also use `f32` 😄
+//!     println!("here's a number: {ice_raw_c}");
+//!
+//!     Ok(())
+//! }
+//!
+//! ```
+
+#[cfg(any(feature = "checked", doc))]
+pub mod checked;
+
+#[cfg(any(feature = "checked", doc))]
+pub use self::checked::CheckedTemperature;
 
 #[cfg(not(feature = "f32"))]
 type Float = f64;
@@ -57,7 +89,8 @@ type Float = f32;
 ///
 /// let my_temp = Temperature::Celsius(0.0);
 ///```
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 pub enum Temperature {
     Fahrenheit(self::Float),
     Celsius(self::Float),
@@ -136,13 +169,11 @@ impl Temperature {
     /// # Usage
     ///
     #[cfg_attr(feature = "f32", doc = "```ignore")]
-    #[cfg_attr(not(feature = "f32"), doc = "```should_fail")]
+    #[cfg_attr(not(feature = "f32"), doc = "```")]
     /// # use simmer::Temperature;
     /// #
     /// let my_temp = Temperature::Fahrenheit(98.6);
-    /// let my_temp_float = my_temp.into_inner(); // moved my_temp. it doesn't exist now!
-    ///
-    /// println!("{my_temp} doesn't exist so this won't compile!!!");
+    /// let my_temp_float = my_temp.into_inner();
     /// ```
     pub fn into_inner(self) -> Float {
         Into::<Float>::into(self)
@@ -155,18 +186,63 @@ impl Temperature {
     #[cfg_attr(feature = "f32", doc = "```ignore")]
     #[cfg_attr(not(feature = "f32"), doc = "```")]
     /// # use simmer::Temperature;
-    /// # use assert_approx_eq::assert_approx_eq;
     /// #
     /// let temp = Temperature::Kelvin(0.0);
-    ///
     /// let temp_inner = temp.get_inner();
     ///
     /// println!("{temp:?}'s inner is {temp_inner}");
+    /// ```
     pub const fn get_inner(&self) -> Float {
         match self {
             Temperature::Fahrenheit(t) => *t,
             Temperature::Celsius(t) => *t,
             Temperature::Kelvin(t) => *t,
+        }
+    }
+
+    /// Tells you if a [Temperature] is below absolute zero - an invalid state
+    /// for temperature.
+    ///
+    /// So... returns:
+    /// - `true` if `t` >= abs zero
+    /// - `false` if `t` < abs zero
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(feature = "f32", doc = "```ignore")]
+    #[cfg_attr(not(feature = "f32"), doc = "```")]
+    /// # use simmer::Temperature;
+    /// #
+    /// let temp = Temperature::Kelvin(0.0);
+    /// assert!(!temp.is_below_abs_zero());
+    ///
+    /// let temp2 = Temperature::Kelvin(-0.1);
+    /// assert!(temp2.is_below_abs_zero());
+    /// ```
+    pub fn is_below_abs_zero(&self) -> bool {
+        match self {
+            Temperature::Fahrenheit(f) => *f < -459.67,
+            Temperature::Celsius(c) => *c < -273.15,
+            Temperature::Kelvin(k) => *k < 0.0,
+        }
+    }
+
+    /// Checks if the internal floating point number is `NaN`.
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(feature = "f32", doc = "```ignore")]
+    #[cfg_attr(not(feature = "f32"), doc = "```")]
+    /// # use simmer::Temperature;
+    /// #
+    /// let temp = Temperature::Fahrenheit(f64::NAN);
+    /// assert!(temp.is_nan());
+    /// ```
+    pub fn is_nan(&self) -> bool {
+        match self {
+            Temperature::Celsius(t) | Temperature::Fahrenheit(t) | Temperature::Kelvin(t) => {
+                t.is_nan()
+            }
         }
     }
 }
