@@ -347,7 +347,7 @@ impl CheckedTemperature {
         Ok(())
     }
 
-    /// Transforms the internal [Temperature] to be in Fahrenheit.
+    /// Converts the internal [Temperature] to Fahrenheit and rewraps it.
     ///
     /// Warning: Adjusts bounds by converting them!
     ///
@@ -376,7 +376,7 @@ impl CheckedTemperature {
         Ok(new)
     }
 
-    /// Transforms the internal [Temperature] to be in Celsius.
+    /// Converts the internal [Temperature] to Celsius and rewraps it.
     ///
     /// Warning: Adjusts bounds by converting them!
     ///
@@ -404,7 +404,7 @@ impl CheckedTemperature {
         Ok(self.to_owned())
     }
 
-    /// Transforms the internal [Temperature] to be in Kelvin.
+    /// Converts the internal [Temperature] to Kelvin and rewraps it.
     ///
     /// Warning: Adjusts bounds by converting them!
     ///
@@ -603,6 +603,72 @@ impl CheckedTemperature {
     pub fn set_lower_bound(&mut self, bound: Float) -> Result<(), CheckedTempError> {
         self.bounds.set_lower(bound)?;
         Ok(())
+    }
+
+    /// Tries to set both bounds to the given values.
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```should_panic")]
+    /// # use simmer::{checked::CheckedTemperature, Temperature};
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    ///     let mut thermostat = CheckedTemperature::new(Temperature::Fahrenheit(68.5))?;
+    ///     thermostat.set_bounds(68.0, 72.0)?; // let's keep a warm house
+    ///
+    ///     thermostat.set_temperature(Temperature::Fahrenheit(65.0))?; // brrr! that's an error buddy
+    /// #
+    /// #   Ok(())
+    /// # }
+    ///
+    /// ```
+    pub fn set_bounds(
+        &mut self,
+        lower_bound: Float,
+        upper_bound: Float,
+    ) -> Result<(), CheckedTempError> {
+        self.bounds.set_lower(lower_bound)?;
+        self.bounds.set_upper(upper_bound)?;
+
+        Ok(())
+    }
+
+    /// Returns the bounds of this `CheckedTemperature` as (unchecked)
+    /// [Temperature]s.
+    ///
+    /// Bounds are a tuple, `(lower, upper)`. For example, you may get back a
+    /// tuple which is `(Temp::F(32.0), Temp::F(72.0))`.
+    ///
+    /// # Usage
+    ///
+    /// When you have a temperature that you've set bounds on, use this
+    /// method to check on them.
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```")]
+    /// # use simmer::{CheckedTemperature, Temperature};
+    /// # use assert_approx_eq::assert_approx_eq;
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    /// let mut temp = CheckedTemperature::new(Temperature::Fahrenheit(68.5))?;
+    /// temp.set_bounds(32.0, 72.0)?;
+    ///
+    /// let bounds = temp.get_bounds();
+    /// assert_approx_eq!(bounds.0.into_inner(), 32.0);
+    /// assert_approx_eq!(bounds.1.into_inner(), 72.0);
+    /// #
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn get_bounds(&self) -> (Temperature, Temperature) {
+        let t: fn(Float) -> Temperature = match self.temp {
+            Temperature::Fahrenheit(_) => Temperature::Fahrenheit,
+            Temperature::Celsius(_) => Temperature::Celsius,
+            Temperature::Kelvin(_) => Temperature::Kelvin,
+        };
+
+        (t(self.bounds.lower), t(self.bounds.upper))
     }
 }
 
