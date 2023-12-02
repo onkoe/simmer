@@ -60,7 +60,7 @@ type Float = f32;
 ///
 /// let my_temp = Temperature::Celsius(0.0);
 ///```
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 pub enum Temperature {
     Fahrenheit(self::Float),
     Celsius(self::Float),
