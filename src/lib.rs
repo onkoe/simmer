@@ -37,8 +37,11 @@
 //! println!("here's a number: {ice_raw_c}");
 //! ```
 
-// #[cfg(feature = "checked")] // TODO
+#[cfg(any(feature = "checked", doc))]
 pub mod checked;
+
+#[cfg(any(feature = "checked", doc))]
+pub use self::checked::CheckedTemperature;
 
 #[cfg(not(feature = "f32"))]
 type Float = f64;
@@ -139,13 +142,10 @@ impl Temperature {
     /// # Usage
     ///
     #[cfg_attr(feature = "f32", doc = "```ignore")]
-    #[cfg_attr(not(feature = "f32"), doc = "```should_fail")]
+    #[cfg_attr(not(feature = "f32"), doc = "```")]
     /// # use simmer::Temperature;
     /// #
     /// let my_temp = Temperature::Fahrenheit(98.6);
-    /// let my_temp_float = my_temp.into_inner(); // moved my_temp. it doesn't exist now!
-    ///
-    /// println!("{my_temp} doesn't exist so this won't compile!!!");
     /// let my_temp_float = my_temp.into_inner();
     /// ```
     pub fn into_inner(self) -> Float {
@@ -159,13 +159,12 @@ impl Temperature {
     #[cfg_attr(feature = "f32", doc = "```ignore")]
     #[cfg_attr(not(feature = "f32"), doc = "```")]
     /// # use simmer::Temperature;
-    /// # use assert_approx_eq::assert_approx_eq;
     /// #
     /// let temp = Temperature::Kelvin(0.0);
-    ///
     /// let temp_inner = temp.get_inner();
     ///
     /// println!("{temp:?}'s inner is {temp_inner}");
+    /// ```
     pub const fn get_inner(&self) -> Float {
         match self {
             Temperature::Fahrenheit(t) => *t,

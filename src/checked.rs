@@ -1,3 +1,4 @@
+#![cfg(any(feature = "checked", doc))]
 //! # Checked
 //!
 //! [Temperature] is useful for storing a real-world temperature value, but it
