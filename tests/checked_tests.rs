@@ -134,6 +134,25 @@ fn zeroes() {
 }
 
 #[test]
+fn abs_zero() -> anyhow::Result<()> {
+    // CheckedTemperature should reject temperatures below absolute zero!
+
+    //f
+    assert!(CheckedTemperature::new(Temperature::Kelvin(0.0)).is_ok());
+    assert!(CheckedTemperature::new(Temperature::Kelvin(-0.1)).is_err());
+
+    // c
+    assert!(CheckedTemperature::new(Temperature::Celsius(-273.15)).is_ok());
+    assert!(CheckedTemperature::new(Temperature::Celsius(-273.17)).is_err());
+
+    // k
+    assert!(CheckedTemperature::new(Temperature::Fahrenheit(-459.67)).is_ok());
+    assert!(CheckedTemperature::new(Temperature::Fahrenheit(-459.70)).is_err());
+
+    Ok(())
+}
+
+#[test]
 fn mixer() -> anyhow::Result<()> {
     let mut temp = CheckedTemperature::new(Temperature::Celsius(0.0))?;
     temp.to_celsius()?;
