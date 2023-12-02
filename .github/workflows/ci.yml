@@ -70,3 +70,21 @@ jobs:
 
       - name: Check semver
         uses: obi1kenobi/cargo-semver-checks-action@v2
+
+  cargo_fuzz:
+    name: Use `cargo-fuzz` for a few minutes to check for easy invariants
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: nightly
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-binstall,cargo-fuzz
+
+      - name: Fuzz `CheckedTemperature` with `cargo-fuzz`
+        run: cargo +nightly fuzz run checked -- -max_total_time=180
