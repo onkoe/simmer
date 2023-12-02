@@ -105,14 +105,6 @@ pub enum CheckedTempError {
     DivisionByZero,
 }
 
-/// Internal type to define a Temperature's unit without storing a floating point number.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-enum TemperatureUnit {
-    Fahrenheit,
-    Celsius,
-    Kelvin,
-}
-
 /// A [Temperature] that cannot be invalid.
 ///
 /// It also stores bounds which require a temperature to be within some range.
@@ -313,59 +305,45 @@ impl CheckedTemperature {
         self.temp.into_inner()
     }
 
-    /// awful helper function to adjust the bounds.
-    /// could probably be a macro but ehhhh ($kind:indent ???)
-    fn adjust_bounds(&mut self, new_unit: TemperatureUnit) -> Result<(), CheckedTempError> {
-        let upper_as_temp;
-        let lower_as_temp;
-
-        // don't try to convert infinities
-        // FIXME: if one bound is infinity, transformations are still applied to both bounds
-        if self.bounds.lower == Float::NEG_INFINITY && self.bounds.upper == Float::INFINITY {
-            return Ok(());
-        }
-
-        // set current unit
+    /// helper function to adjust the bounds.
+    fn adjust_bounds(
+        &mut self,
+        new_unit: fn(Float) -> Temperature,
+    ) -> Result<(), CheckedTempError> {
         let current_unit = match self.temp {
-            Temperature::Fahrenheit(_) => {
-                upper_as_temp = Temperature::Fahrenheit(self.bounds.upper);
-                lower_as_temp = Temperature::Fahrenheit(self.bounds.lower);
-                TemperatureUnit::Fahrenheit
-            }
-            Temperature::Celsius(_) => {
-                upper_as_temp = Temperature::Celsius(self.bounds.upper);
-                lower_as_temp = Temperature::Celsius(self.bounds.lower);
-                TemperatureUnit::Celsius
-            }
-            Temperature::Kelvin(_) => {
-                upper_as_temp = Temperature::Kelvin(self.bounds.upper);
-                lower_as_temp = Temperature::Kelvin(self.bounds.lower);
-                TemperatureUnit::Kelvin
-            }
+            Temperature::Fahrenheit(_) => Temperature::Fahrenheit,
+            Temperature::Celsius(_) => Temperature::Celsius,
+            Temperature::Kelvin(_) => Temperature::Kelvin,
         };
 
-        // do nothing if we're converting for no reason lmao
+        // don't bother converting if we're converting to the same type
         if new_unit == current_unit {
             return Ok(());
         }
 
-        match new_unit {
-            TemperatureUnit::Fahrenheit => {
-                self.bounds.upper = upper_as_temp.to_fahrenheit().into();
-                self.bounds.lower = lower_as_temp.to_fahrenheit().into();
-            }
-            TemperatureUnit::Celsius => {
-                self.bounds.upper = upper_as_temp.to_celsius().into();
-                self.bounds.lower = lower_as_temp.to_celsius().into();
-            }
-            TemperatureUnit::Kelvin => {
-                self.bounds.upper = upper_as_temp.to_kelvin().into();
-                self.bounds.lower = lower_as_temp.to_kelvin().into();
-            }
+        // don't try to convert infinities
+        if self.bounds.lower == Float::NEG_INFINITY && self.bounds.upper == Float::INFINITY {
+            return Ok(());
         }
 
-        // im so sorry for your eyes 🥹
-        // i recommend these: https://www.amazon.com/dp/B074NCBXCT/
+        let set_with_bounds =
+            |b: Float, f: fn(Float) -> Temperature| -> Result<Float, CheckedTempError> {
+                let new_bound = f(b);
+
+                Ok(match current_unit(0.0) {
+                    Temperature::Fahrenheit(_) => new_bound.to_fahrenheit().into(),
+                    Temperature::Celsius(_) => new_bound.to_celsius().into(),
+                    Temperature::Kelvin(_) => new_bound.to_kelvin().into(),
+                })
+            };
+
+        if self.bounds.lower != Float::NEG_INFINITY {
+            self.bounds.lower = set_with_bounds(self.bounds.lower, current_unit)?;
+        }
+
+        if self.bounds.upper != Float::INFINITY {
+            self.bounds.upper = set_with_bounds(self.bounds.upper, current_unit)?;
+        }
 
         Ok(())
     }
@@ -390,10 +368,10 @@ impl CheckedTemperature {
     /// # }
     /// ```
     pub fn to_fahrenheit(&self) -> Result<CheckedTemperature, CheckedTempError> {
-        let mut new = self.clone();
+        let mut new = *self;
 
         // adjust bounds
-        new.adjust_bounds(TemperatureUnit::Fahrenheit)?;
+        new.adjust_bounds(Temperature::Fahrenheit)?;
 
         new.temp = new.temp.to_fahrenheit();
         Ok(new)
@@ -421,7 +399,7 @@ impl CheckedTemperature {
     /// ```
     pub fn to_celsius(&mut self) -> Result<CheckedTemperature, CheckedTempError> {
         // adjust bounds
-        self.adjust_bounds(TemperatureUnit::Celsius)?;
+        self.adjust_bounds(Temperature::Celsius)?;
 
         self.temp = self.temp.to_celsius();
         Ok(self.to_owned())
@@ -448,7 +426,7 @@ impl CheckedTemperature {
     /// ```
     pub fn to_kelvin(&mut self) -> Result<CheckedTemperature, CheckedTempError> {
         // adjust bounds
-        self.adjust_bounds(TemperatureUnit::Kelvin)?;
+        self.adjust_bounds(Temperature::Kelvin)?;
 
         self.temp = self.temp.to_kelvin();
         Ok(self.to_owned())
