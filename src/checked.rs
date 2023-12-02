@@ -132,7 +132,7 @@ impl CheckedTemperature {
     /// Checks a temperature for problems, such as being below abs. zero or
     /// being out of bounds!
     fn check(&self, temp: Temperature) -> Result<(), CheckedTempError> {
-        if temp.check_abs_zero() {
+        if temp.is_below_abs_zero() {
             return Err(CheckedTempError::BelowAbsoluteZero(temp.get_inner()));
         }
 
@@ -171,7 +171,7 @@ impl CheckedTemperature {
     /// # }
     /// ```
     pub fn new(temp: Temperature) -> Result<CheckedTemperature, CheckedTempError> {
-        if temp.check_abs_zero() {
+        if temp.is_below_abs_zero() {
             return Err(CheckedTempError::BelowAbsoluteZero(temp.get_inner()));
         }
 

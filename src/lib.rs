@@ -202,8 +202,23 @@ impl Temperature {
     /// Tells you if a [Temperature] is below absolute zero - an invalid state
     /// for temperature.
     ///
-    /// So... `true` if **invalid**, `false` if **valid**.
-    pub fn check_abs_zero(&self) -> bool {
+    /// So... returns:
+    /// - `true` if `t` >= abs zero
+    /// - `false` if `t` < abs zero
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(feature = "f32", doc = "```ignore")]
+    #[cfg_attr(not(feature = "f32"), doc = "```")]
+    /// # use simmer::Temperature;
+    /// #
+    /// let temp = Temperature::Kelvin(0.0);
+    /// assert!(!temp.is_below_abs_zero());
+    ///
+    /// let temp2 = Temperature::Kelvin(-0.1);
+    /// assert!(temp2.is_below_abs_zero());
+    /// ```
+    pub fn is_below_abs_zero(&self) -> bool {
         match self {
             Temperature::Fahrenheit(f) => *f < -459.67,
             Temperature::Celsius(c) => *c < -273.15,
