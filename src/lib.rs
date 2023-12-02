@@ -146,6 +146,7 @@ impl Temperature {
     /// let my_temp_float = my_temp.into_inner(); // moved my_temp. it doesn't exist now!
     ///
     /// println!("{my_temp} doesn't exist so this won't compile!!!");
+    /// let my_temp_float = my_temp.into_inner();
     /// ```
     pub fn into_inner(self) -> Float {
         Into::<Float>::into(self)

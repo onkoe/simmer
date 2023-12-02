@@ -43,7 +43,7 @@ fn ufmt_debug_print() {
             .trim()
     );
 
-    let mut buf = CharArrWriter::default();
+    buf = CharArrWriter::default();
 
     ufmt::uwrite!(&mut buf, "{:?}", Temperature::Fahrenheit(4.06)).unwrap();
 

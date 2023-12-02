@@ -15,10 +15,7 @@ exclude = [".gitignore", "tests/", "README.md"]
 ufmt = "0.2"
 ufmt-write = "0.1"
 ufmt_float = "0.2"
-
-# for checked
-onlyerror = "0.1" # { version = "0.1", optional = true } TODO
-
+onlyerror = "0.1"
 
 [features]
 #/// Includes the default `f64` type for internal + exported values.
@@ -26,7 +23,8 @@ default = []
 #/// Use `f32` instead of `f64` for temperatures. This can help when working with devices that don't
 #/// support `f64`, including some Arduino boards.
 f32 = []
-checked = [] # ["dep:onlyerror"] TODO
+#/// Enable the `CheckedTemperature` type. Less performant, but limits temps to reality.
+checked = []
 
 [dev-dependencies]
 anyhow = "1.0.75"
