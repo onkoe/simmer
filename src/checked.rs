@@ -112,6 +112,19 @@ pub enum CheckedTempError {
 ///
 /// It also stores bounds which require a temperature to be within some range.
 ///
+/// # Usage
+///
+#[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+#[cfg_attr(feature = "checked", doc = "```")]
+/// use simmer::{CheckedTemperature, Temperature};
+///
+/// # fn main() -> anyhow::Result<()> {
+/// let checked_temp = CheckedTemperature::new(Temperature::Kelvin(0.2))?;
+/// println!("oh baby it's barely not absolute zero: {checked_temp}");
+/// #
+/// # Ok(())
+/// # }
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 pub struct CheckedTemperature {
     temp: Temperature,
@@ -147,6 +160,19 @@ impl CheckedTemperature {
 
     /// Tries to create a new [CheckedTemperature] from a given [Temperature].
     /// Fails if temperature is invalid (below absolute zero).
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```")]
+    /// use simmer::{CheckedTemperature, Temperature};
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    ///     let my_temp = CheckedTemperature::new(Temperature::Fahrenheit(32.0))?;
+    ///     println!("water freezes at {my_temp} degrees f!");
+    /// #   Ok(())
+    /// # }
+    /// ```
     pub fn new(temp: Temperature) -> Result<CheckedTemperature, CheckedTempError> {
         if temp.check_abs_zero() {
             return Err(CheckedTempError::BelowAbsoluteZero(temp.get_inner()));
@@ -175,6 +201,22 @@ impl CheckedTemperature {
     }
 
     /// Tries to change the current value of `Self` to a new [Temperature].
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```")]
+    /// # use simmer::{checked::CheckedTemperature, Temperature};
+    /// # use assert_approx_eq::assert_approx_eq;
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    ///     let mut my_temp = CheckedTemperature::new(Temperature::Celsius(24.0))?;
+    ///     my_temp.set_temperature(Temperature::Fahrenheit(72.0));
+    ///     
+    ///     assert_approx_eq!(my_temp.get_inner(), 72.0);
+    /// #   Ok(())
+    /// # }
+    /// ```
     pub fn set_temperature(&mut self, new: Temperature) -> Result<(), CheckedTempError> {
         self.check(new)?;
 
@@ -182,16 +224,88 @@ impl CheckedTemperature {
         Ok(())
     }
 
+    /// Returns the internal unchecked [Temperature].
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```")]
+    /// # use simmer::{checked::CheckedTemperature, Temperature};
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    ///     let checked = CheckedTemperature::new(Temperature::Fahrenheit(32.0))?;
+    ///     let unchecked = checked.get_unchecked();
+    ///
+    ///     assert_eq!(unchecked.get_inner(), checked.get_inner());
+    ///     # Ok(())
+    /// # }
+    /// ```
     pub fn get_unchecked(&self) -> Temperature {
         self.temp
     }
 
+    /// Transforms a `CheckedTemperature` into a `Temperature`.
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```")]
+    /// # use simmer::{checked::CheckedTemperature, Temperature};
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    ///     let checked = CheckedTemperature::new(Temperature::Fahrenheit(32.0))?;
+    ///     let unchecked = checked.into_unchecked();
+    ///     
+    ///     // checked doesn't exist anymore
+    ///     println!("my unchecked temp is: {unchecked}!");
+    ///     # Ok(())
+    /// # }
+    /// ```
     pub fn into_unchecked(self) -> Temperature {
         self.temp
     }
 
+    // some delegate methods from `Temperature`
+
+    /// Gets the inner floating point value.
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```")]
+    /// # use simmer::{checked::CheckedTemperature, Temperature};
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    ///     let temp = CheckedTemperature::new(Temperature::Kelvin(0.0))?;
+    ///     let temp_inner = temp.get_inner();
+    ///
+    ///     println!("{temp:?}'s inner is {temp_inner}");
+    /// #   Ok(())
+    /// # }
+    /// ```
     pub fn get_inner(&self) -> Float {
         self.temp.get_inner()
+    }
+
+    /// A discovery function that returns the inner type, consuming the outer Temperature type.
+    /// Use `my_temp.into()` when possible.
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```")]
+    /// # use simmer::{checked::CheckedTemperature, Temperature};
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    ///     let my_temp = CheckedTemperature::new(Temperature::Fahrenheit(98.6))?;
+    ///     let my_temp_float = my_temp.into_inner(); // moved my_temp. it doesn't exist now!
+    ///
+    ///     println!("{my_temp} doesn't exist so this won't compile!!!");
+    ///     # Ok(())
+    /// # }
+    /// ```
+    pub fn into_inner(self) -> Float {
+        self.temp.into_inner()
     }
 
     pub fn to_fahrenheit(&self) -> Result<CheckedTemperature, CheckedTempError> {
@@ -204,6 +318,26 @@ impl CheckedTemperature {
         Ok(new)
     }
 
+    /// Transforms the internal [Temperature] to be in Celsius.
+    ///
+    /// Warning: Adjusts bounds by converting them!
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```")]
+    /// # use simmer::{checked::CheckedTemperature, Temperature};
+    /// # use assert_approx_eq::assert_approx_eq;
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    /// let mut body_temp_f = CheckedTemperature::new(Temperature::Fahrenheit(98.6))?;
+    ///
+    /// let body_temp_c = body_temp_f.to_celsius()?;
+    /// assert_approx_eq!(body_temp_c.into_inner(), 37.0);
+    /// #
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn to_celsius(&mut self) -> Result<CheckedTemperature, CheckedTempError> {
         // adjust bounds
         self.adjust_bounds(TemperatureUnit::Celsius)?;
@@ -212,6 +346,25 @@ impl CheckedTemperature {
         Ok(self.to_owned())
     }
 
+    /// Transforms the internal [Temperature] to be in Kelvin.
+    ///
+    /// Warning: Adjusts bounds by converting them!
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```")]
+    /// # use simmer::{checked::CheckedTemperature, Temperature};
+    /// # use assert_approx_eq::assert_approx_eq;
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    /// let mut abs_zero_k = CheckedTemperature::new(Temperature::Kelvin(0.0))?;
+    ///
+    /// let abs_zero_c = abs_zero_k.to_celsius()?;
+    /// assert_approx_eq!(abs_zero_c.into_inner(), -273.15);
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn to_kelvin(&mut self) -> Result<CheckedTemperature, CheckedTempError> {
         // adjust bounds
         self.adjust_bounds(TemperatureUnit::Kelvin)?;
@@ -220,7 +373,27 @@ impl CheckedTemperature {
         Ok(self.to_owned())
     }
 
+    // a little math...
+    // can't operator overload with `Result`, so these will have to do
+
     /// Tries to add two temperatures together.
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```")]
+    /// # use simmer::{checked::CheckedTemperature, Temperature};
+    /// # use assert_approx_eq::assert_approx_eq;
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    ///     let mut my_temp = CheckedTemperature::new(Temperature::Celsius(32.0))?;
+    ///     my_temp.add(Temperature::Celsius(32.0))?;
+    ///
+    ///     assert_approx_eq!(my_temp.get_inner(), 64.0);
+    /// #
+    /// #   Ok(())
+    /// # }
+    /// ```
     pub fn add(&mut self, temp: Temperature) -> Result<(), CheckedTempError> {
         let result = self.temp + temp;
         self.check(result)?;
@@ -230,6 +403,23 @@ impl CheckedTemperature {
     }
 
     /// Tries to subtract using two temperatures.
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```")]
+    /// # use simmer::{checked::CheckedTemperature, Temperature};
+    /// # use assert_approx_eq::assert_approx_eq;
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    ///     let mut my_temp = CheckedTemperature::new(Temperature::Celsius(64.0))?;
+    ///     my_temp.sub(Temperature::Celsius(32.0))?;
+    ///
+    ///     assert_approx_eq!(my_temp.get_inner(), 32.0);
+    /// #
+    /// #   Ok(())
+    /// # }
+    /// ```
     pub fn sub(&mut self, temp: Temperature) -> Result<(), CheckedTempError> {
         let result = self.temp - temp;
         self.check(result)?;
@@ -239,6 +429,23 @@ impl CheckedTemperature {
     }
 
     /// Tries to multiply a temperature by another number.
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```")]
+    /// # use simmer::{checked::CheckedTemperature, Temperature};
+    /// # use assert_approx_eq::assert_approx_eq;
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    ///     let mut my_temp = CheckedTemperature::new(Temperature::Celsius(32.0))?;
+    ///     my_temp.mul(2.0)?;
+    ///
+    ///     assert_approx_eq!(my_temp.get_inner(), 64.0);
+    /// #
+    /// #   Ok(())
+    /// # }
+    /// ```
     pub fn mul(&mut self, num: Float) -> Result<(), CheckedTempError> {
         let result = self.temp * num;
         self.check(result)?;
@@ -248,6 +455,40 @@ impl CheckedTemperature {
     }
 
     /// Tries to divide a temperature by another number.
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```")]
+    /// # use simmer::{checked::CheckedTemperature, Temperature};
+    /// # use assert_approx_eq::assert_approx_eq;
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    ///     let mut my_temp = CheckedTemperature::new(Temperature::Celsius(32.0))?;
+    ///     my_temp.div(2.0)?;
+    ///
+    ///     assert_approx_eq!(my_temp.get_inner(), 16.0);
+    /// #
+    /// #   Ok(())
+    /// # }
+    /// ```
+    ///
+    /// ## Note: Fails on Zero
+    ///
+    /// Division by zero isn't allowed...
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```should_panic")]
+    /// # use simmer::{checked::CheckedTemperature, Temperature};
+    /// # use assert_approx_eq::assert_approx_eq;
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    ///     let mut my_temp = CheckedTemperature::new(Temperature::Celsius(32.0))?;
+    ///     my_temp.div(0.0)?;
+    /// #
+    /// #   Ok(())
+    /// # }
+    /// ```
     pub fn div(&mut self, num: Float) -> Result<(), CheckedTempError> {
         if num == 0.0 {
             return Err(CheckedTempError::DivisionByZero);
@@ -261,12 +502,46 @@ impl CheckedTemperature {
     }
 
     /// Tries to set the upper allowed bound to a given value.
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```should_panic")]
+    /// # use simmer::{checked::CheckedTemperature, Temperature};
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    ///     let mut my_temp = CheckedTemperature::new(Temperature::Celsius(42.3))?;
+    ///     my_temp.set_upper_bound(0.0)?; // no going above water's freezing temp
+    ///
+    ///     my_temp.set_temperature(Temperature::Celsius(24.0))?; // that's an error :o
+    /// #
+    /// #   Ok(())
+    /// # }
+    ///
+    /// ```
     pub fn set_upper_bound(&mut self, bound: Float) -> Result<(), CheckedTempError> {
         self.bounds.set_upper(bound)?;
         Ok(())
     }
 
     /// Tries to set the lower allowed bound to a given value.
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```should_panic")]
+    /// # use simmer::{checked::CheckedTemperature, Temperature};
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    ///     let mut my_temp = CheckedTemperature::new(Temperature::Celsius(42.3))?;
+    ///     my_temp.set_lower_bound(0.0)?; // no going below water's freezing temp
+    ///
+    ///     my_temp.set_temperature(Temperature::Celsius(-24.0))?; // that's an error :o
+    /// #
+    /// #   Ok(())
+    /// # }
+    ///
+    /// ```
     pub fn set_lower_bound(&mut self, bound: Float) -> Result<(), CheckedTempError> {
         self.bounds.set_lower(bound)?;
         Ok(())
