@@ -45,6 +45,7 @@ use crate::{Float, Temperature};
 /// By default, these are \[Float::NEG_INFINITY, Float::INFINITY\], but users can change them
 /// for their uses.
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 struct Bounds {
     lower: Float,
     upper: Float,
@@ -150,6 +151,7 @@ pub enum CheckedTempError {
 /// # }
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 pub struct CheckedTemperature {
     temp: Temperature,
     bounds: Bounds,
