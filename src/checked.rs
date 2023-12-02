@@ -108,10 +108,11 @@ pub enum CheckedTempError {
     DivisionByZero,
 }
 
-/// A [Temperature] that cannot be invalid. 
-/// 
-/// It also stores bounds which 
-#[derive(Clone, Copy, Debug, PartialEq)]
+/// A [Temperature] that cannot be invalid.
+///
+/// It also stores bounds which require a temperature to be within some range.
+///
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 pub struct CheckedTemperature {
     temp: Temperature,
     bounds: Bounds,
@@ -174,11 +175,49 @@ impl CheckedTemperature {
     }
 
     /// Tries to change the current value of `Self` to a new [Temperature].
-    pub fn change(&mut self, new: Temperature) -> Result<(), CheckedTempError> {
+    pub fn set_temperature(&mut self, new: Temperature) -> Result<(), CheckedTempError> {
         self.check(new)?;
 
         self.temp = new;
         Ok(())
+    }
+
+    pub fn get_unchecked(&self) -> Temperature {
+        self.temp
+    }
+
+    pub fn into_unchecked(self) -> Temperature {
+        self.temp
+    }
+
+    pub fn get_inner(&self) -> Float {
+        self.temp.get_inner()
+    }
+
+    pub fn to_fahrenheit(&self) -> Result<CheckedTemperature, CheckedTempError> {
+        let mut new = self.clone();
+
+        // adjust bounds
+        new.adjust_bounds(TemperatureUnit::Fahrenheit)?;
+
+        new.temp = new.temp.to_fahrenheit();
+        Ok(new)
+    }
+
+    pub fn to_celsius(&mut self) -> Result<CheckedTemperature, CheckedTempError> {
+        // adjust bounds
+        self.adjust_bounds(TemperatureUnit::Celsius)?;
+
+        self.temp = self.temp.to_celsius();
+        Ok(self.to_owned())
+    }
+
+    pub fn to_kelvin(&mut self) -> Result<CheckedTemperature, CheckedTempError> {
+        // adjust bounds
+        self.adjust_bounds(TemperatureUnit::Kelvin)?;
+
+        self.temp = self.temp.to_kelvin();
+        Ok(self.to_owned())
     }
 
     /// Tries to add two temperatures together.
