@@ -50,14 +50,9 @@ jobs:
           path: ~/.cargo/bin
           key: ${{ runner.os }}-cargo-bin-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Install some extra Cargo tools
-        run: |
-          if ! command -v cargo-deny &> /dev/null || ! command -v cargo-test-all-features &> /dev/null
-          then
-              cargo install cargo-binstall
-              cargo binstall --no-confirm cargo-deny
-              cargo binstall --no-confirm cargo-all-features
-          fi
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny,cargo-all-features
 
       - name: Build
         run: cargo build --verbose
