@@ -128,6 +128,8 @@ pub enum CheckedTempError {
     TempOutOfBounds(Float, &'static str),
     #[error("Division by zero is not allowed.")]
     DivisionByZero,
+    #[error("NaN values are not allowed for CheckedTemperature construction.")]
+    GivenValueIsNan,
 }
 
 /// A [Temperature] that cannot be invalid.
@@ -159,6 +161,10 @@ impl CheckedTemperature {
     fn check(&self, temp: Temperature) -> Result<(), CheckedTempError> {
         if temp.is_below_abs_zero() {
             return Err(CheckedTempError::BelowAbsoluteZero(temp.get_inner()));
+        }
+
+        if temp.is_nan() {
+            return Err(CheckedTempError::GivenValueIsNan);
         }
 
         // over user-set upper bound
@@ -198,6 +204,10 @@ impl CheckedTemperature {
     pub fn new(temp: Temperature) -> Result<CheckedTemperature, CheckedTempError> {
         if temp.is_below_abs_zero() {
             return Err(CheckedTempError::BelowAbsoluteZero(temp.get_inner()));
+        }
+
+        if temp.is_nan() {
+            return Err(CheckedTempError::GivenValueIsNan);
         }
 
         // over upper bound
