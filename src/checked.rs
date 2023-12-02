@@ -233,3 +233,54 @@ impl CheckedTemperature {
         Ok(())
     }
 }
+
+// some display impls... ripped straight from `Temperature` 😖
+// various display impls
+
+impl core::fmt::Display for CheckedTemperature {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "{}", self.get_inner())
+    }
+}
+
+impl ufmt::uDebug for CheckedTemperature {
+    fn fmt<W>(&self, f: &mut ufmt::Formatter<'_, W>) -> Result<(), W::Error>
+    where
+        W: ufmt_write::uWrite + ?Sized,
+    {
+        let unit = match self.temp {
+            Temperature::Fahrenheit(_) => "Fahrenheit",
+            Temperature::Celsius(_) => "Celsius",
+            Temperature::Kelvin(_) => "Kelvin",
+        };
+
+        #[cfg(feature = "f32")]
+        return ufmt::uwrite!(
+            f,
+            "Temperature::{}({})",
+            unit,
+            ufmt_float::uFmt_f32::Five(self.get_inner())
+        );
+
+        #[cfg(not(feature = "f32"))]
+        return ufmt::uwrite!(
+            f,
+            "Temperature::{}({})",
+            unit,
+            ufmt_float::uFmt_f64::Five(self.get_inner())
+        );
+    }
+}
+
+impl ufmt::uDisplay for CheckedTemperature {
+    fn fmt<W>(&self, f: &mut ufmt::Formatter<'_, W>) -> Result<(), W::Error>
+    where
+        W: ufmt_write::uWrite + ?Sized,
+    {
+        #[cfg(feature = "f32")]
+        return ufmt::uwrite!(f, "{}", ufmt_float::uFmt_f32::Five(self.get_inner()));
+
+        #[cfg(not(feature = "f32"))]
+        return ufmt::uwrite!(f, "{}", ufmt_float::uFmt_f64::Five(self.get_inner()));
+    }
+}
