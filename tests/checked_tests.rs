@@ -132,3 +132,56 @@ fn zeroes() {
 
     test_all!(zero_f, zero_c, zero_k);
 }
+
+#[test]
+fn mixer() -> anyhow::Result<()> {
+    let mut temp = CheckedTemperature::new(Temperature::Celsius(0.0))?;
+    temp.to_celsius()?;
+
+    for _ in 0..=1000 {
+        temp.to_celsius()?;
+        temp.to_fahrenheit()?;
+    }
+
+    assert_approx_eq!(0.0, temp.to_celsius()?.into_inner());
+
+    temp = CheckedTemperature::new(Temperature::Fahrenheit(72.5))?;
+
+    for _ in 0..=1000 {
+        temp.to_celsius()?;
+        temp.to_fahrenheit()?;
+    }
+
+    assert_approx_eq!(72.5, temp.to_fahrenheit()?.into_inner());
+
+    Ok(())
+}
+
+// let's test the bounds
+#[test]
+fn bounds() -> anyhow::Result<()> {
+    // [32 F, 72.0 F]
+    let mut temp = CheckedTemperature::new(Temperature::Fahrenheit(68.6))?;
+    temp.set_upper_bound(72.0)?;
+    temp.set_lower_bound(32.0)?;
+
+    assert!(temp
+        .set_temperature(Temperature::Fahrenheit(-40.0))
+        .is_err());
+    assert!(temp.set_temperature(Temperature::Fahrenheit(31.9)).is_err());
+
+    assert!(temp.set_temperature(Temperature::Fahrenheit(72.1)).is_err());
+    assert!(temp
+        .set_temperature(Temperature::Fahrenheit(700.86))
+        .is_err());
+
+    // in celsius: [0 C, 22.222 C]
+    temp = temp.to_celsius()?;
+
+    assert!(temp.set_temperature(Temperature::Celsius(-1.0)).is_err());
+    assert!(temp.set_temperature(Temperature::Celsius(23.0)).is_err());
+
+    assert!(temp.set_temperature(Temperature::Celsius(22.0)).is_ok());
+
+    Ok(())
+}
