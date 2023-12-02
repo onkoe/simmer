@@ -326,23 +326,22 @@ impl CheckedTemperature {
             return Ok(());
         }
 
-        let set_with_bounds =
-            |b: Float, f: fn(Float) -> Temperature| -> Result<Float, CheckedTempError> {
-                let new_bound = f(b);
+        let set_with_bounds = |b: Float| -> Result<Float, CheckedTempError> {
+            let current_bound = current_unit(b);
 
-                Ok(match current_unit(0.0) {
-                    Temperature::Fahrenheit(_) => new_bound.to_fahrenheit().into(),
-                    Temperature::Celsius(_) => new_bound.to_celsius().into(),
-                    Temperature::Kelvin(_) => new_bound.to_kelvin().into(),
-                })
-            };
+            Ok(match new_unit(0.0) {
+                Temperature::Fahrenheit(_) => current_bound.to_fahrenheit().into_inner(),
+                Temperature::Celsius(_) => current_bound.to_celsius().into_inner(),
+                Temperature::Kelvin(_) => current_bound.to_kelvin().into_inner(),
+            })
+        };
 
         if self.bounds.lower != Float::NEG_INFINITY {
-            self.bounds.lower = set_with_bounds(self.bounds.lower, current_unit)?;
+            self.bounds.lower = set_with_bounds(self.bounds.lower)?;
         }
 
         if self.bounds.upper != Float::INFINITY {
-            self.bounds.upper = set_with_bounds(self.bounds.upper, current_unit)?;
+            self.bounds.upper = set_with_bounds(self.bounds.upper)?;
         }
 
         Ok(())
