@@ -16,7 +16,6 @@ use onlyerror::{self, Error};
 
 use crate::{Float, Temperature};
 
-// TODO: usage examples
 // TODO: tests !!!!!!!!!!!!!
 
 /// A set of bounds for which a [CheckedTemperature] cannot exceed.
@@ -106,6 +105,14 @@ pub enum CheckedTempError {
     TempOutOfBounds(Float, &'static str),
     #[error("Division by zero is not allowed.")]
     DivisionByZero,
+}
+
+/// Internal type to define a Temperature's unit without storing a floating point number.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+enum TemperatureUnit {
+    Fahrenheit,
+    Celsius,
+    Kelvin,
 }
 
 /// A [Temperature] that cannot be invalid.
@@ -308,6 +315,82 @@ impl CheckedTemperature {
         self.temp.into_inner()
     }
 
+    /// awful helper function to adjust the bounds.
+    /// could probably be a macro but ehhhh ($kind:indent ???)
+    fn adjust_bounds(&mut self, new_unit: TemperatureUnit) -> Result<(), CheckedTempError> {
+        let upper_as_temp;
+        let lower_as_temp;
+
+        // don't try to convert infinities
+        // FIXME: if one bound is infinity, transformations are still applied to both bounds
+        if self.bounds.lower == Float::NEG_INFINITY && self.bounds.upper == Float::INFINITY {
+            return Ok(());
+        }
+
+        // set current unit
+        let current_unit = match self.temp {
+            Temperature::Fahrenheit(_) => {
+                upper_as_temp = Temperature::Fahrenheit(self.bounds.upper);
+                lower_as_temp = Temperature::Fahrenheit(self.bounds.lower);
+                TemperatureUnit::Fahrenheit
+            }
+            Temperature::Celsius(_) => {
+                upper_as_temp = Temperature::Celsius(self.bounds.upper);
+                lower_as_temp = Temperature::Celsius(self.bounds.lower);
+                TemperatureUnit::Celsius
+            }
+            Temperature::Kelvin(_) => {
+                upper_as_temp = Temperature::Kelvin(self.bounds.upper);
+                lower_as_temp = Temperature::Kelvin(self.bounds.lower);
+                TemperatureUnit::Kelvin
+            }
+        };
+
+        // do nothing if we're converting for no reason lmao
+        if new_unit == current_unit {
+            return Ok(());
+        }
+
+        match new_unit {
+            TemperatureUnit::Fahrenheit => {
+                self.bounds.upper = upper_as_temp.to_fahrenheit().into();
+                self.bounds.lower = lower_as_temp.to_fahrenheit().into();
+            }
+            TemperatureUnit::Celsius => {
+                self.bounds.upper = upper_as_temp.to_celsius().into();
+                self.bounds.lower = lower_as_temp.to_celsius().into();
+            }
+            TemperatureUnit::Kelvin => {
+                self.bounds.upper = upper_as_temp.to_kelvin().into();
+                self.bounds.lower = lower_as_temp.to_kelvin().into();
+            }
+        }
+
+        // im so sorry for your eyes 🥹
+        // i recommend these: https://www.amazon.com/dp/B074NCBXCT/
+
+        Ok(())
+    }
+
+    /// Transforms the internal [Temperature] to be in Fahrenheit.
+    ///
+    /// Warning: Adjusts bounds by converting them!
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(not(feature = "checked"), doc = "```ignore")]
+    #[cfg_attr(feature = "checked", doc = "```")]
+    /// # use simmer::{checked::CheckedTemperature, Temperature};
+    /// # use assert_approx_eq::assert_approx_eq;
+    /// #
+    /// # fn main() -> anyhow::Result<()> {
+    /// let mut body_temp_c = CheckedTemperature::new(Temperature::Celsius(37.0))?;
+    ///
+    /// let body_temp_f = body_temp_c.to_fahrenheit()?;
+    /// assert_approx_eq!(body_temp_f.into_inner(), 98.6);
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn to_fahrenheit(&self) -> Result<CheckedTemperature, CheckedTempError> {
         let mut new = self.clone();
 
