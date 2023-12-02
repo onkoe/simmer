@@ -1,0 +1,28 @@
+[package]
+name = "simmer-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[dependencies.simmer]
+path = ".."
+features = ["arbitrary", "checked"]
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[profile.release]
+debug = 1
+
+[[bin]]
+name = "checked"
+path = "fuzz_targets/checked.rs"
+test = false
+doc = false
