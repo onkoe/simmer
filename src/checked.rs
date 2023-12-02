@@ -16,8 +16,6 @@ use onlyerror::{self, Error};
 
 use crate::{Float, Temperature};
 
-// TODO: tests !!!!!!!!!!!!!
-
 /// A set of bounds for which a [CheckedTemperature] cannot exceed.
 /// By default, these are \[Float::NEG_INFINITY, Float::INFINITY\], but users can change them
 /// for their uses.

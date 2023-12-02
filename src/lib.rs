@@ -36,6 +36,32 @@
 //! let ice_raw_c: f64 = ice_c.into(); // it's an f32 if the feature is enabled!
 //! println!("here's a number: {ice_raw_c}");
 //! ```
+//!
+//! ### Checked
+//!
+//! There's also a [CheckedTemperature] type so you can safely store and use
+//! temperatures. It works on embedded and implements many of the same
+//! functions that [Temperature] does!
+//!
+//! See the [checked] module for more!
+//!
+//! Here's an example showing how to use it:
+//!
+//! ```ignore
+//! use simmer::{CheckedTemperature, Temperature};
+//!
+//! fn main() -> anyhow::Result<()> {
+//!     let ice = CheckedTemperature::new(Temperature::Fahrenheit(32.0))?;
+//!     println!("water freezes at {ice} degrees fahrenheit");
+//!
+//!     let ice_c = ice.to_celsius()?;
+//!     let ice_raw_c: f64 = ice_c.into(); // can also use `f32` 😄
+//!     println!("here's a number: {ice_raw_c}");
+//!
+//!     Ok(())
+//! }
+//!
+//! ```
 
 #[cfg(any(feature = "checked", doc))]
 pub mod checked;

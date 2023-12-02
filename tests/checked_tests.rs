@@ -1,5 +1,6 @@
+#![cfg(feature = "checked")]
 use assert_approx_eq::assert_approx_eq;
-use simmer::Temperature;
+use simmer::{CheckedTemperature, Temperature};
 
 // just like in the lib itself...
 #[cfg(not(feature = "f32"))]
@@ -16,45 +17,79 @@ macro_rules! test_all {
         // test temp_f
         assert_approx_eq!(
             $temp_f,
-            Temperature::Celsius($temp_c).to_fahrenheit().into_inner()
-        );
-        assert_approx_eq!(
-            $temp_f,
-            Temperature::Kelvin($temp_k).to_fahrenheit().into_inner()
-        );
-        assert_approx_eq!(
-            $temp_f,
-            Temperature::Fahrenheit($temp_f)
+            CheckedTemperature::new(Temperature::Celsius($temp_c))
+                .unwrap()
                 .to_fahrenheit()
+                .unwrap()
+                .into_inner()
+        );
+        assert_approx_eq!(
+            $temp_f,
+            CheckedTemperature::new(Temperature::Kelvin($temp_k))
+                .unwrap()
+                .to_fahrenheit()
+                .unwrap()
+                .into_inner()
+        );
+        assert_approx_eq!(
+            $temp_f,
+            CheckedTemperature::new(Temperature::Fahrenheit($temp_f))
+                .unwrap()
+                .to_fahrenheit()
+                .unwrap()
                 .into_inner()
         );
 
         // ok now temp_c
         assert_approx_eq!(
             $temp_c,
-            Temperature::Fahrenheit($temp_f).to_celsius().into_inner()
+            CheckedTemperature::new(Temperature::Fahrenheit($temp_f))
+                .unwrap()
+                .to_celsius()
+                .unwrap()
+                .into_inner()
         );
         assert_approx_eq!(
             $temp_c,
-            Temperature::Kelvin($temp_k).to_celsius().into_inner()
+            CheckedTemperature::new(Temperature::Kelvin($temp_k))
+                .unwrap()
+                .to_celsius()
+                .unwrap()
+                .into_inner()
         );
         assert_approx_eq!(
             $temp_c,
-            Temperature::Celsius($temp_c).to_celsius().into_inner()
+            CheckedTemperature::new(Temperature::Celsius($temp_c))
+                .unwrap()
+                .to_celsius()
+                .unwrap()
+                .into_inner()
         );
 
         // annnnd temp_k
         assert_approx_eq!(
             $temp_k,
-            Temperature::Fahrenheit($temp_f).to_kelvin().into_inner()
+            CheckedTemperature::new(Temperature::Fahrenheit($temp_f))
+                .unwrap()
+                .to_kelvin()
+                .unwrap()
+                .into_inner()
         );
         assert_approx_eq!(
             $temp_k,
-            Temperature::Celsius($temp_c).to_kelvin().into_inner()
+            CheckedTemperature::new(Temperature::Celsius($temp_c))
+                .unwrap()
+                .to_kelvin()
+                .unwrap()
+                .into_inner()
         );
         assert_approx_eq!(
             $temp_k,
-            Temperature::Kelvin($temp_k).to_kelvin().into_inner()
+            CheckedTemperature::new(Temperature::Kelvin($temp_k))
+                .unwrap()
+                .to_kelvin()
+                .unwrap()
+                .into_inner()
         );
     };
 }
