@@ -9,7 +9,7 @@ edition = "2021"
 categories = ["no-std", "science", "embedded", "mathematics"]
 readme = "README.md"
 keywords = ["temperature", "temp", "fahrenheit", "celsius", "kelvin"]
-exclude = [".gitignore", "tests/", "README.md"]
+exclude = [".gitignore", "tests/", "README.md", "fuzz/", "examples/"]
 
 [dependencies]
 ufmt = "0.2"
