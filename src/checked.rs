@@ -20,9 +20,9 @@ use crate::{Float, Temperature};
 // TODO: tests !!!!!!!!!!!!!
 
 /// A set of bounds for which a [CheckedTemperature] cannot exceed.
-/// By default, these are \[Float::MIN, Float::MAX\], but you can change them
-/// for your uses.
-#[derive(Clone, Copy, Debug, PartialEq)]
+/// By default, these are \[Float::NEG_INFINITY, Float::INFINITY\], but users can change them
+/// for their uses.
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 struct Bounds {
     lower: Float,
     upper: Float,
@@ -30,19 +30,18 @@ struct Bounds {
 
 impl Default for Bounds {
     /// The default [Bounds] for some floating point number.
-    /// \[MIN, MAX\]
+    /// \[Float::NEG_INFINITY, Float::INFINITY\]
     fn default() -> Self {
-        #[cfg(feature = "f32")]
-        return Self {
-            lower: f32::MIN,
-            upper: f32::MAX,
-        };
-
-        #[cfg(not(feature = "f32"))]
-        return Self {
-            lower: f64::MIN,
-            upper: f64::MAX,
-        };
+        Self {
+            #[cfg(feature = "f32")]
+            lower: f32::NEG_INFINITY,
+            #[cfg(feature = "f32")]
+            upper: f32::INFINITY,
+            #[cfg(not(feature = "f32"))]
+            lower: f64::NEG_INFINITY,
+            #[cfg(not(feature = "f32"))]
+            upper: f64::INFINITY,
+        }
     }
 }
 
