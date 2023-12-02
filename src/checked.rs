@@ -11,6 +11,31 @@
 //! You can also set your own upper and lower limits for the contained
 //! temperature, helping to ensure that any value is within your project's
 //! bounds.
+//!
+//! **Warning**: Due to internal types using floating point numbers, mildly
+//! invalid state may be representable. For example, a temperature that's below
+//! 0.0° K by "less than" a bit will be represented as 0.0° K.
+//!
+//! [Fractional values](https://docs.rs/fraction/) would fix these issues,
+//! but they aren't (yet) supported.
+//!
+//! ## Usage
+//!
+//! ```ignore
+//! use simmer::{CheckedTemperature, Temperature};
+//!
+//! fn main() -> anyhow::Result<()> {
+//!     let ice = CheckedTemperature::new(Temperature::Fahrenheit(32.0))?;
+//!     println!("water freezes at {ice} degrees fahrenheit");
+//!
+//!     let ice_c = ice.to_celsius()?;
+//!     let ice_raw_c: f64 = ice_c.into(); // can also use `f32` 😄
+//!     println!("here's a number: {ice_raw_c}");
+//!
+//!     Ok(())
+//! }
+//!
+//! ```
 
 use onlyerror::{self, Error};
 
