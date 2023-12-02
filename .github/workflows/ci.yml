@@ -52,7 +52,7 @@ jobs:
 
       - name: Install some extra Cargo tools
         run: |
-          if ! command -v cargo-deny &> /dev/null
+          if ! command -v cargo-deny &> /dev/null || ! command -v cargo-test-all-features &> /dev/null
           then
               cargo install cargo-binstall
               cargo binstall --no-confirm cargo-deny
