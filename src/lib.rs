@@ -225,6 +225,25 @@ impl Temperature {
             Temperature::Kelvin(k) => *k < 0.0,
         }
     }
+
+    /// Checks if the internal floating point number is `NaN`.
+    ///
+    /// # Usage
+    ///
+    #[cfg_attr(feature = "f32", doc = "```ignore")]
+    #[cfg_attr(not(feature = "f32"), doc = "```")]
+    /// # use simmer::Temperature;
+    /// #
+    /// let temp = Temperature::Fahrenheit(f64::NAN);
+    /// assert!(temp.is_nan());
+    /// ```
+    pub fn is_nan(&self) -> bool {
+        match self {
+            Temperature::Celsius(t) | Temperature::Fahrenheit(t) | Temperature::Kelvin(t) => {
+                t.is_nan()
+            }
+        }
+    }
 }
 
 #[allow(clippy::from_over_into)]
