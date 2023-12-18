@@ -1,4 +1,5 @@
 #![cfg(feature = "checked")]
+#![cfg(std)]
 use assert_approx_eq::assert_approx_eq;
 use simmer::{CheckedTemperature, Temperature};
 

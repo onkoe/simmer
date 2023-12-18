@@ -1,5 +1,3 @@
-#![no_std]
-
 #[allow(unused_imports)]
 use simmer::Temperature;
 

@@ -1,4 +1,5 @@
 #![cfg(feature = "checked")]
+#![cfg(std)]
 use simmer::{CheckedTemperature, Temperature};
 use util::CharArrWriter;
 

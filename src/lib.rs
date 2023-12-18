@@ -1,3 +1,4 @@
+#![cfg_attr(not(feature = "std"), no_std)]
 //! # Simmer
 //!
 //! A collection of tools to easily represent different temperatures units and
@@ -66,7 +67,7 @@
 #[cfg(any(feature = "checked", doc))]
 pub mod checked;
 
-#[cfg(any(feature = "checked", doc))]
+#[cfg(all(any(feature = "checked", doc), std))]
 pub use self::checked::CheckedTemperature;
 
 #[cfg(not(feature = "f32"))]
@@ -90,7 +91,7 @@ type Float = f32;
 /// let my_temp = Temperature::Celsius(0.0);
 ///```
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+#[cfg_attr(all(feature = "arbitrary", std), derive(arbitrary::Arbitrary))]
 pub enum Temperature {
     Fahrenheit(self::Float),
     Celsius(self::Float),
