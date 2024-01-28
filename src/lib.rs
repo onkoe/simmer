@@ -1,4 +1,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(
+    clippy::std_instead_of_core,
+    clippy::alloc_instead_of_core,
+    clippy::std_instead_of_alloc
+)]
 //! # Simmer
 //!
 //! A collection of tools to easily represent different temperatures units and
